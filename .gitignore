@@ -1,0 +1,17 @@
+# Секреты и личные данные
+.env
+.secrets/
+browser_profile/
+grades.json
+debug/
+logs/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# IDE
+.idea/

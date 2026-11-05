@@ -1,0 +1,37 @@
+# Запуск на сервере: docker compose up -d --build
+# При первом старте база создаётся из migrations/*.sql автоматически.
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: aura_ai
+      POSTGRES_USER: aura_bot
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aura_bot -d aura_ai"]
+      interval: 5s
+      retries: 10
+
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: aura_ai
+      DB_USER: aura_bot
+    volumes:
+      # Ключ шифрования и сохранённые сессии Platonus.
+      - ./.secrets:/app/.secrets
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,0 +1,13 @@
+.env
+.secrets/
+.venv/
+.git/
+.idea/
+browser_profile/
+grades.json
+debug/
+logs/
+__pycache__/
+.pytest_cache/
+tests/
+рабочий_не связанный/
