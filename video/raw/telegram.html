@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aura chat scene</title>
+<style>
+  :root {
+    --bg: #0e1621;
+    --header: #17212b;
+    --in: #182533;
+    --out: #2b5278;
+    --text: #f5f5f5;
+    --hint: #7f91a4;
+    --link: #6ab3f3;
+    --accent: #5288c1;
+    --out-hint: #7da8d3;
+    --btn: rgba(24, 37, 51, 0.82);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 432px; height: 768px; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: "Inter", "Noto Color Emoji", sans-serif;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.38;
+    -webkit-font-smoothing: antialiased;
+  }
+  #phone { position: relative; width: 432px; height: 768px; display: flex; flex-direction: column; overflow: hidden; }
+
+  .statusbar {
+    height: 26px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between;
+    background: var(--header); font-size: 13px; font-weight: 600; letter-spacing: 0.2px;
+  }
+  .statusbar .icons { display: flex; gap: 6px; align-items: center; }
+  .header {
+    height: 56px; background: var(--header); display: flex; align-items: center; gap: 12px; padding: 0 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.35); position: relative; z-index: 3;
+  }
+  .header .back { width: 24px; height: 24px; }
+  .avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex: none;
+    background: radial-gradient(circle at 30% 25%, #c9a7ff 0%, #7b4dff 45%, #3b1fa8 100%);
+    display: grid; place-items: center; font-weight: 800; font-size: 18px; color: #fff;
+    box-shadow: 0 0 0 2px rgba(181,140,255,0.15);
+  }
+  .who { flex: 1; min-width: 0; }
+  .who .name { font-weight: 600; font-size: 16px; }
+  .who .sub { font-size: 13px; color: var(--hint); height: 18px; }
+  .who .sub.typing { color: var(--link); }
+  .header .more { width: 22px; height: 22px; opacity: 0.8; }
+
+  #chat {
+    flex: 1; position: relative; overflow: hidden;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(82,136,193,0.10), transparent 40%),
+      radial-gradient(circle at 85% 70%, rgba(123,77,255,0.10), transparent 45%),
+      #0e1621;
+  }
+  #chat::before {
+    content: ""; position: absolute; inset: 0; opacity: 0.06;
+    background-image: radial-gradient(#fff 1px, transparent 1.4px);
+    background-size: 22px 22px;
+  }
+  #list { position: absolute; left: 0; right: 0; bottom: 0; padding: 8px 8px 10px; display: flex; flex-direction: column; }
+  .wrap { overflow: visible; }
+  .row { display: flex; padding: 3px 0; transform-origin: left bottom; }
+  .row.me { justify-content: flex-end; transform-origin: right bottom; }
+  .row.center { justify-content: center; }
+  .bubble {
+    max-width: 86%; padding: 7px 11px 6px; border-radius: 16px; background: var(--in);
+    white-space: pre-wrap; word-wrap: break-word; position: relative;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.25);
+  }
+  .row.bot .bubble { border-bottom-left-radius: 5px; }
+  .row.me .bubble { background: var(--out); border-bottom-right-radius: 5px; }
+  .bubble a { color: var(--link); text-decoration: none; }
+  .bubble b { font-weight: 650; }
+  .bubble s { color: var(--hint); }
+  .time { position: absolute; right: 10px; bottom: 5px; font-size: 11.5px; color: var(--hint); white-space: nowrap; }
+  .tsp { display: inline-block; width: 46px; height: 1px; }
+  .row.me .tsp { width: 64px; }
+  .photo .time { right: 12px; bottom: 8px; }
+  .row.me .time { color: var(--out-hint); }
+  .chip {
+    background: rgba(24,37,51,0.75); color: #dbe5ef; font-size: 13px; font-weight: 600;
+    padding: 3px 10px; border-radius: 12px;
+  }
+  .status { font-weight: 600; background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .photo { padding: 3px; max-width: 86%; }
+  .photo img { display: block; width: 100%; border-radius: 13px 13px 4px 4px; }
+  .photo .caption { padding: 6px 8px 4px; }
+  .buttons { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; max-width: 86%; }
+  .row.bot .stack { display: flex; flex-direction: column; max-width: 86%; }
+  .row.bot .stack .bubble, .row.bot .stack .buttons { max-width: 100%; }
+  .btnrow { display: flex; gap: 4px; }
+  .btn {
+    flex: 1; background: var(--btn); border-radius: 10px; padding: 9px 8px; text-align: center;
+    font-size: 14px; font-weight: 600; backdrop-filter: blur(6px); position: relative; overflow: hidden;
+  }
+  .btn.pressed { background: rgba(82,136,193,0.55); }
+
+  .inputbar {
+    height: 54px; background: var(--header); display: flex; align-items: center; gap: 8px; padding: 0 8px;
+    position: relative; z-index: 3;
+  }
+  .menu-btn {
+    background: var(--accent); color: #fff; font-weight: 650; font-size: 14px; border-radius: 9px;
+    padding: 7px 12px; display: flex; align-items: center; gap: 6px;
+  }
+  .field { flex: 1; font-size: 16px; color: var(--hint); white-space: nowrap; overflow: hidden; }
+  .field.filled { color: var(--text); }
+  .caret { display: inline-block; width: 2px; height: 19px; background: var(--link); vertical-align: -3px; margin-left: 1px; }
+  .send { width: 30px; height: 30px; display: grid; place-items: center; }
+
+  #push {
+    position: absolute; left: 8px; right: 8px; top: 6px; z-index: 10;
+    background: rgba(40, 52, 66, 0.92); backdrop-filter: blur(14px);
+    border-radius: 18px; padding: 11px 12px; display: flex; gap: 10px; align-items: flex-start;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+  }
+  #push .avatar { width: 36px; height: 36px; font-size: 15px; }
+  #push .ptitle { font-weight: 650; font-size: 14px; display: flex; justify-content: space-between; }
+  #push .ptitle span { color: var(--hint); font-weight: 500; font-size: 12px; }
+  #push .ptext { font-size: 14px; color: #dbe5ef; }
+  #tap {
+    position: absolute; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%;
+    background: rgba(255,255,255,0.35); z-index: 20; pointer-events: none; display: none;
+  }
+</style>
+</head>
+<body>
+<div id="phone">
+  <div class="statusbar">
+    <span id="clock">10:24</span>
+    <span class="icons">
+      <svg width="17" height="11" viewBox="0 0 17 11"><g fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></g></svg>
+      <svg width="16" height="11" viewBox="0 0 16 11"><path fill="#fff" d="M8 2.2c2.3 0 4.4.9 6 2.4l1.2-1.2A10 10 0 0 0 8 .5 10 10 0 0 0 .8 3.4L2 4.6a8.4 8.4 0 0 1 6-2.4Zm0 3.3c1.4 0 2.7.5 3.6 1.4L12.8 5.7A6.7 6.7 0 0 0 8 3.8a6.7 6.7 0 0 0-4.8 1.9l1.2 1.2c.9-.9 2.2-1.4 3.6-1.4ZM8 8.8l2.2-1.1A3 3 0 0 0 8 6.9a3 3 0 0 0-2.2.8L8 10.9Z"/></svg>
+      <svg width="26" height="12" viewBox="0 0 26 12"><rect x="0.5" y="0.5" width="22" height="11" rx="3" fill="none" stroke="#fff" opacity="0.5"/><rect x="2" y="2" width="16" height="8" rx="2" fill="#fff"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#fff" opacity="0.5"/></svg>
+    </span>
+  </div>
+  <div class="header">
+    <svg class="back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="avatar">A</div>
+    <div class="who"><div class="name" id="botname">Aura</div><div class="sub" id="sub">бот</div></div>
+    <svg class="more" viewBox="0 0 24 24"><g fill="#fff"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></g></svg>
+  </div>
+  <div id="chat"><div id="list"></div></div>
+  <div class="inputbar">
+    <div class="menu-btn" id="menuBtn">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1.5" y="1.5" width="13" height="13" rx="3" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M5 6h6M5 9h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Aura
+    </div>
+    <div class="field" id="field">Хабарлама</div>
+    <div class="send" id="send"></div>
+  </div>
+  <div id="push" style="display:none">
+    <div class="avatar">A</div>
+    <div style="flex:1;min-width:0">
+      <div class="ptitle">Aura <span>қазір</span></div>
+      <div class="ptext" id="ptext"></div>
+    </div>
+  </div>
+  <div id="tap"></div>
+</div>
+
+<script>
+const M = window.MESSAGES;
+const scene = new URLSearchParams(location.search).get("scene") || "notify";
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const easeOut = (p) => 1 - Math.pow(1 - p, 3);
+const easeBack = (p) => { const c = 1.5; return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2); };
+
+const MIC = '<svg width="24" height="24" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="#7f91a4" stroke-width="1.8"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" fill="none" stroke="#7f91a4" stroke-width="1.8" stroke-linecap="round"/></svg>';
+const SEND = '<svg width="26" height="26" viewBox="0 0 24 24"><path d="M3.4 20.4 21 12 3.4 3.6 3.4 10.2 15 12 3.4 13.8Z" fill="#5288c1"/></svg>';
+
+// --- Сценарии: время в мс от начала клипа -----------------------------------
+const history = [
+  { kind: "chip", html: "Бүгін", at: -1 },
+  { from: "bot", at: -1, time: "08:02",
+    html: "✅ <b>Platonus қосылды</b>\nЖаңа бағалар қойылса, бірден хабарлаймын." },
+];
+
+function chatScene(question, answer, status, t0) {
+  // Набор вопроса → отправка → статус → печать ответа.
+  const typeStart = t0, typeEnd = t0 + question.length * 120;
+  const sent = typeEnd + 450;
+  const statusAt = sent + 600;
+  const streamStart = statusAt + 2600;
+  const streamEnd = streamStart + Array.from(stripTags(answer)).length * 26;
+  return {
+    typing: { text: question, start: typeStart, end: typeEnd, sent },
+    messages: [
+      { from: "me", at: sent, html: question },
+      { from: "bot", at: statusAt, status, stream: [streamStart, streamEnd], html: answer },
+    ],
+    botTyping: [[statusAt - 300, streamEnd]],
+    end: streamEnd,
+  };
+}
+
+function stripTags(html) {
+  return html.replace(/<[^>]+>/g, "").replace(/&[a-z#0-9]+;/g, "x");
+}
+
+const SCENES = {
+  notify() {
+    return {
+      clock: "10:24",
+      messages: [
+        ...history,
+        { from: "bot", at: 1700, time: "10:24", html: M.notification },
+        { from: "bot", at: 9000, time: "10:24", html: M.summary, buttons: [[M.chart_button]] },
+      ],
+      push: [{ at: 600, text: "🔔 Жаңа бағалар · Блокчейн технологиялары, Терең оқыту" }],
+      botTyping: [[4200, 9000]],
+      duration: 26000,
+    };
+  },
+
+  chat() {
+    const a = chatScene(M.question_weak, M.answer_weak, M.statuses.get_grades, 1200);
+    const answer = a.messages[1];
+    answer.buttons = [[M.chart_button]];
+    const tapAt = a.end + 2200;
+    const chartStatus = tapAt + 500;
+    const photoAt = chartStatus + 3200;
+    return {
+      clock: "10:31",
+      typing: [a.typing],
+      messages: [
+        ...history,
+        { from: "bot", at: -1, time: "10:24", html: M.summary, buttons: [[M.chart_button]] },
+        ...a.messages,
+        { from: "bot", at: chartStatus, status: M.statuses.show_grade_chart, stream: [photoAt, photoAt], html: "", vanish: photoAt },
+        { from: "bot", at: photoAt, photo: "build/chart.png", html: M.chart_caption },
+      ],
+      taps: [{ at: tapAt, msg: 4, button: [0, 0] }],
+      botTyping: [...a.botTyping, [chartStatus - 200, photoAt]],
+      duration: photoAt + 7000,
+    };
+  },
+
+  schedule() {
+    const t = chatScene("/schedule", M.schedule_today, null, 9500);
+    const sched = t.messages[1];
+    sched.status = null; sched.stream = null; sched.at = t.typing.sent + 700;
+    sched.buttons = [[M.schedule_buttons[0], M.schedule_buttons[1]], [M.schedule_buttons[2]]];
+    const reminderAt = sched.at + 6500;
+    const q = chatScene(M.question_tomorrow, M.answer_tomorrow, M.statuses.get_schedule, reminderAt + 4500);
+    return {
+      clock: "08:00",
+      clockAt: [[reminderAt - 900, "17:56"]],
+      messages: [
+        { kind: "chip", html: "Бүгін", at: -1 },
+        { from: "bot", at: 1500, time: "08:00", html: M.digest },
+        { kind: "chip", html: "17:56", at: reminderAt - 600, small: true },
+        ...t.messages.slice(0, 1).map((m) => ({ ...m, time: "08:03" })),
+        { ...sched, time: "08:03" },
+        { from: "bot", at: reminderAt, time: "17:56", html: M.reminder_online },
+        ...q.messages.map((m) => ({ ...m, time: "17:57" })),
+      ],
+      typing: [t.typing, q.typing],
+      push: [
+        { at: 400, text: "☀️ Қайырлы таң! Бүгін 3 сабақ, бірінші — 10:00" },
+        { at: reminderAt - 500, text: "⏰ 14 минуттан кейін сабақ: Блокчейн технологиялары · онлайн" },
+      ],
+      botTyping: [[700, 1500], ...q.botTyping],
+      duration: q.end + 5000,
+    };
+  },
+
+  miniapp() {
+    return {
+      clock: "10:40",
+      messages: [...history, { from: "bot", at: -1, time: "10:24", html: M.summary, buttons: [[M.chart_button]] }],
+      tapsMenu: [{ at: 1500 }],
+      duration: 3000,
+    };
+  },
+};
+
+const S = SCENES[scene]();
+window.SCENE_DURATION = S.duration;
+document.getElementById("botname").textContent = M.bot_name;
+
+// --- Обрезка HTML по числу видимых символов ----------------------------------
+function truncateHTML(html, count) {
+  const parts = html.split(/(<[^>]+>|&[a-z#0-9]+;)/g);
+  let out = "", left = count;
+  const open = [];
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.startsWith("<")) {
+      if (left <= 0) break;
+      out += part;
+      if (part.startsWith("</")) open.pop();
+      else if (!part.endsWith("/>") && !/^<br/i.test(part)) open.push(part.match(/^<(\w+)/)[1]);
+      continue;
+    }
+    if (part.startsWith("&") && part.endsWith(";")) {
+      if (left <= 0) break;
+      out += part; left -= 1; continue;
+    }
+    const chars = Array.from(part);
+    if (chars.length <= left) { out += part; left -= chars.length; }
+    else { out += chars.slice(0, Math.max(0, left)).join(""); left = 0; break; }
+  }
+  while (open.length) out += `</${open.pop()}>`;
+  return out;
+}
+
+// --- Отрисовка кадра ----------------------------------------------------------
+const list = document.getElementById("list");
+const nodes = new Map();
+let lastHeight = null, offset = 0;
+
+function makeNode(msg, index) {
+  const wrap = document.createElement("div");
+  wrap.className = "wrap";
+  const row = document.createElement("div");
+  wrap.appendChild(row);
+  if (msg.kind === "chip") {
+    row.className = "row center";
+    row.innerHTML = `<div class="chip">${msg.html}</div>`;
+  } else {
+    row.className = `row ${msg.from}`;
+    const stack = document.createElement("div");
+    stack.className = "stack";
+    if (msg.from === "me") stack.style.maxWidth = "86%";
+    const bubble = document.createElement("div");
+    bubble.className = msg.photo ? "bubble photo" : "bubble";
+    if (msg.photo) bubble.style.maxWidth = "100%";
+    stack.appendChild(bubble);
+    if (msg.buttons) {
+      const buttons = document.createElement("div");
+      buttons.className = "buttons";
+      for (const line of msg.buttons) {
+        const r = document.createElement("div");
+        r.className = "btnrow";
+        for (const label of line) {
+          const b = document.createElement("div");
+          b.className = "btn";
+          b.textContent = label;
+          r.appendChild(b);
+        }
+        buttons.appendChild(r);
+      }
+      stack.appendChild(buttons);
+    }
+    row.appendChild(stack);
+    if (msg.photo) {
+      stack.style.width = "86%";
+    }
+  }
+  list.appendChild(wrap);
+  return { wrap, row, last: null };
+}
+
+function timeTag(msg) {
+  const time = msg.time || S.clockNow || S.clock;
+  const check = msg.from === "me" ? ' <svg width="16" height="10" viewBox="0 0 16 10" style="vertical-align:-1px"><path d="M1 5.5 4 8.5 10 1.5M6.5 8.5 7 8.5 13.5 1.5" fill="none" stroke="#7da8d3" stroke-width="1.5" stroke-linecap="round"/></svg>' : "";
+  return `<span class="tsp"></span><span class="time">${time}${check}</span>`;
+}
+
+function bubbleHTML(msg, t) {
+  if (msg.status && msg.stream && t < msg.stream[0]) {
+    const shift = ((t / 12) % 200);
+    const [emoji, ...rest] = msg.status.split(" ");
+    return { html: `${emoji} <span class="status" style="background-image:linear-gradient(90deg,#7f91a4 0%,#7f91a4 35%,#ffffff 50%,#7f91a4 65%,#7f91a4 100%);background-position:${200 - shift}% 0">${rest.join(" ")}</span>`, key: "status" };
+  }
+  if (msg.stream) {
+    const [a, b] = msg.stream;
+    const total = Array.from(stripTags(msg.html)).length;
+    const n = b <= a ? total : Math.floor(total * clamp((t - a) / (b - a)));
+    if (n >= total) return { html: msg.html + timeTag(msg), key: "done" };
+    return { html: truncateHTML(msg.html, n), key: "n" + n };
+  }
+  if (msg.photo) {
+    return { html: `<img src="${msg.photo}"><div class="caption">${msg.html}${timeTag(msg)}</div>`, key: "photo" };
+  }
+  return { html: msg.html + timeTag(msg), key: "static" };
+}
+
+function renderAt(t) {
+  S.clockNow = S.clock;
+  for (const [at, value] of S.clockAt || []) if (t >= at) S.clockNow = value;
+  document.getElementById("clock").textContent = S.clockNow;
+
+  S.messages.forEach((msg, index) => {
+    const visible = t >= msg.at && !(msg.vanish && t >= msg.vanish);
+    let node = nodes.get(index);
+    if (!visible) { if (node) node.wrap.style.display = "none"; return; }
+    if (!node) { node = makeNode(msg, index); nodes.set(index, node); }
+    node.wrap.style.display = "";
+    if (msg.kind !== "chip") {
+      const bubble = node.row.querySelector(".bubble");
+      const { html, key } = bubbleHTML(msg, t);
+      if (key === "status" || node.last !== key) { bubble.innerHTML = html; node.last = key; }
+      const buttons = node.row.querySelector(".buttons");
+      if (buttons) {
+        const shownAt = msg.stream ? msg.stream[1] + 150 : msg.at + 250;
+        const bp = clamp((t - shownAt) / 300);
+        buttons.style.display = bp > 0 ? "" : "none";
+        buttons.style.opacity = bp;
+        buttons.style.transform = `translateY(${(1 - easeOut(bp)) * 8}px)`;
+      }
+    }
+    const p = msg.at < 0 ? 1 : clamp((t - msg.at) / 380);
+    const e = easeBack(p);
+    node.row.style.opacity = clamp(p * 2);
+    node.row.style.transform = `translateY(${(1 - e) * 18}px) scale(${0.92 + 0.08 * clamp(e, 0, 1.05)})`;
+  });
+
+  // Плавная прокрутка: новый контент «въезжает» снизу.
+  const h = list.offsetHeight;
+  if (lastHeight !== null && h > lastHeight) offset += h - lastHeight;
+  lastHeight = h;
+  offset *= 0.78;
+  if (offset < 0.3) offset = 0;
+  list.style.transform = `translateY(${offset}px)`;
+
+  // Поле ввода.
+  const field = document.getElementById("field");
+  let typed = "";
+  for (const ty of S.typing || []) {
+    if (t >= ty.start && t < ty.sent) {
+      const n = Math.floor(Array.from(ty.text).length * clamp((t - ty.start) / (ty.end - ty.start)));
+      typed = Array.from(ty.text).slice(0, n).join("");
+      if (t >= ty.end) typed = ty.text;
+      typed = typed || "​";
+    }
+  }
+  const caretOn = Math.floor(t / 500) % 2 === 0;
+  if (typed) {
+    field.className = "field filled";
+    field.innerHTML = typed.replace(/</g, "&lt;") + (caretOn ? '<span class="caret"></span>' : '<span class="caret" style="opacity:0"></span>');
+    document.getElementById("send").innerHTML = typed.trim() && typed !== "​" ? SEND : MIC;
+  } else {
+    field.className = "field";
+    field.textContent = "Хабарлама";
+    document.getElementById("send").innerHTML = MIC;
+  }
+
+  // «печатает…» в шапке.
+  const sub = document.getElementById("sub");
+  const typingNow = (S.botTyping || []).some(([a, b]) => t >= a && t < b);
+  sub.className = typingNow ? "sub typing" : "sub";
+  sub.textContent = typingNow ? "жазып жатыр" + ".".repeat(1 + Math.floor(t / 400) % 3) : M.bot_status;
+
+  // Пуш-уведомление сверху.
+  const push = document.getElementById("push");
+  let shown = null;
+  for (const item of S.push || []) if (t >= item.at && t < item.at + 3600) shown = item;
+  if (shown) {
+    const k = t - shown.at;
+    const pin = easeBack(clamp(k / 450));
+    const pout = easeOut(clamp((k - 3150) / 450));
+    push.style.display = "flex";
+    push.style.transform = `translateY(${(1 - pin) * -120 - pout * 140}px)`;
+    document.getElementById("ptext").textContent = shown.text;
+  } else push.style.display = "none";
+
+  // Нажатия.
+  const tap = document.getElementById("tap");
+  tap.style.display = "none";
+  document.querySelectorAll(".btn.pressed").forEach((b) => b.classList.remove("pressed"));
+  const taps = [...(S.taps || [])];
+  for (const tp of S.tapsMenu || []) taps.push({ ...tp, menu: true });
+  for (const tp of taps) {
+    const k = t - tp.at;
+    if (k < -250 || k > 600) continue;
+    let target;
+    if (tp.menu) target = document.getElementById("menuBtn");
+    else {
+      const node = nodes.get(tp.msg);
+      if (!node) continue;
+      target = node.row.querySelectorAll(".btnrow")[tp.button[0]].children[tp.button[1]];
+    }
+    const r = target.getBoundingClientRect();
+    tap.style.display = "block";
+    tap.style.left = r.left + r.width / 2 + "px";
+    tap.style.top = r.top + r.height / 2 + "px";
+    if (k < 0) {
+      tap.style.opacity = clamp((k + 250) / 250) * 0.9;
+      tap.style.transform = `scale(${0.6})`;
+    } else {
+      tap.style.opacity = (1 - clamp(k / 600)) * 0.9;
+      tap.style.transform = `scale(${0.6 + easeOut(clamp(k / 600)) * 1.4})`;
+      if (k < 350 && !tp.menu) target.classList.add("pressed");
+    }
+  }
+}
+
+window.renderAt = renderAt;
+window.ready = Promise.all(
+  [...document.images].map((img) => img.complete ? null : new Promise((r) => img.onload = r))
+).then(() => document.fonts.ready);
+</script>
+</body>
+</html>

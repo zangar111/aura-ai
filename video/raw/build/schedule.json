@@ -1,0 +1,148 @@
+{
+  "days": {
+    "1": [
+      {
+        "start": "09:00",
+        "finish": "09:50",
+        "subject": "Деректер қоймасы",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Әбенова Г.С.",
+        "room": "305",
+        "building": "B01 (БОҒ)",
+        "online": false,
+        "link": null,
+        "pairs": 1
+      },
+      {
+        "start": "10:00",
+        "finish": "10:50",
+        "subject": "Ықтималдықтар теориясы",
+        "type": "Pr",
+        "type_name": "Практикалық сабақ",
+        "tutor": "Нұрланов Д.Е.",
+        "room": "214",
+        "building": "B01 (БОҒ)",
+        "online": false,
+        "link": null,
+        "pairs": 1
+      }
+    ],
+    "2": [
+      {
+        "start": "11:10",
+        "finish": "13:00",
+        "subject": "Веб-бағдарламалау",
+        "type": "Lab",
+        "type_name": "Зертханалық жұмыстар",
+        "tutor": "Касымов А.Т.",
+        "room": "410",
+        "building": "B02 (АТФ)",
+        "online": false,
+        "link": null,
+        "pairs": 2
+      }
+    ],
+    "3": [
+      {
+        "start": "09:00",
+        "finish": "09:50",
+        "subject": "Блокчейн технологиялары",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Серікова Н.А.",
+        "room": "512",
+        "building": "B02 (АТФ)",
+        "online": false,
+        "link": null,
+        "pairs": 1
+      },
+      {
+        "start": "18:10",
+        "finish": "19:00",
+        "subject": "Ықтималдықтар теориясы",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Нұрланов Д.Е.",
+        "room": null,
+        "building": null,
+        "online": true,
+        "link": "https://teams.microsoft.com/l/meetup-join/demo",
+        "pairs": 1
+      }
+    ],
+    "4": [
+      {
+        "start": "10:00",
+        "finish": "10:50",
+        "subject": "Терең оқыту",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Жақыпов Е.М.",
+        "room": "710",
+        "building": "B02 (АТФ)",
+        "online": false,
+        "link": null,
+        "pairs": 1
+      },
+      {
+        "start": "11:10",
+        "finish": "13:00",
+        "subject": "Терең оқыту",
+        "type": "Lab",
+        "type_name": "Зертханалық жұмыстар",
+        "tutor": "Жақыпов Е.М.",
+        "room": "106",
+        "building": "B02 (АТФ)",
+        "online": false,
+        "link": null,
+        "pairs": 2
+      },
+      {
+        "start": "18:10",
+        "finish": "19:00",
+        "subject": "Блокчейн технологиялары",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Серікова Н.А.",
+        "room": null,
+        "building": null,
+        "online": true,
+        "link": "https://teams.microsoft.com/l/meetup-join/demo",
+        "pairs": 1
+      }
+    ],
+    "5": [
+      {
+        "start": "09:00",
+        "finish": "10:50",
+        "subject": "Блокчейн технологиялары",
+        "type": "Lab",
+        "type_name": "Зертханалық жұмыстар",
+        "tutor": "Серікова Н.А.",
+        "room": "508",
+        "building": "B02 (АТФ)",
+        "online": false,
+        "link": null,
+        "pairs": 2
+      },
+      {
+        "start": "14:00",
+        "finish": "14:50",
+        "subject": "Деректер қоймасы",
+        "type": "L",
+        "type_name": "Дәріс",
+        "tutor": "Әбенова Г.С.",
+        "room": "305",
+        "building": "B01 (БОҒ)",
+        "online": false,
+        "link": null,
+        "pairs": 1
+      }
+    ]
+  },
+  "week": 10,
+  "weeks_total": 15,
+  "semester_start": "2026-09-01",
+  "semester_end": "2026-12-19"
+}
