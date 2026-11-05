@@ -3,3 +3,4 @@ node_modules/
 public/*.mp4
 public/logo*.png
 public/voice.mp3
+out/
