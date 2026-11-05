@@ -1,0 +1,37 @@
+[
+  {
+    "id": "01_problem",
+    "seconds": 20.51,
+    "target": 20
+  },
+  {
+    "id": "02_notify",
+    "seconds": 18.21,
+    "target": 30
+  },
+  {
+    "id": "03_ai_chat",
+    "seconds": 19.8,
+    "target": 40
+  },
+  {
+    "id": "04_schedule",
+    "seconds": 17.95,
+    "target": 30
+  },
+  {
+    "id": "05_miniapp",
+    "seconds": 13.79,
+    "target": 30
+  },
+  {
+    "id": "06_tech",
+    "seconds": 16.35,
+    "target": 20
+  },
+  {
+    "id": "07_final",
+    "seconds": 9.72,
+    "target": 10
+  }
+]
