@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Terminal scene</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1280px; height: 720px; overflow: hidden; }
+  body { background: radial-gradient(circle at 30% 20%, #2a1d5c 0%, #0d0b1f 60%); display: grid; place-items: center; font-family: "JetBrains Mono", monospace; }
+  .win { width: 1040px; height: 560px; background: #0f111a; border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06); overflow: hidden; }
+  .bar { height: 40px; background: #1a1d29; display: flex; align-items: center; gap: 8px; padding: 0 16px; color: #8a90a6; font-size: 14px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .bar .title { flex: 1; text-align: center; margin-right: 60px; }
+  pre { padding: 22px 26px; color: #d7dae6; font-family: inherit; font-size: 19px; line-height: 1.6; white-space: pre-wrap; }
+  .p { color: #b48cff; } .g { color: #34d399; font-weight: 700; } .m { color: #6b7280; }
+  .caret { display: inline-block; width: 11px; height: 22px; background: #d7dae6; vertical-align: -4px; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="bar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span><span class="title">aura-ai — pytest</span></div>
+  <pre id="out"></pre>
+</div>
+<script>
+// Вывод — настоящий результат `python -m pytest -q` этого репозитория.
+const CMD = "python -m pytest -q";
+const LINE1 = ".".repeat(72), LINE2 = ".".repeat(14);
+const out = document.getElementById("out");
+const clamp = (v) => Math.min(1, Math.max(0, v));
+window.SCENE_DURATION = 10000;
+window.renderAt = (t) => {
+  const prompt = '<span class="p">aura-ai</span> <span class="m">on</span> <span class="p">main</span> ❯ ';
+  const typed = CMD.slice(0, Math.floor(CMD.length * clamp((t - 600) / 1500)));
+  let html = prompt + typed;
+  const running = t >= 2500;
+  if (!running) return (out.innerHTML = html + (Math.floor(t / 450) % 2 ? "" : '<span class="caret"></span>'));
+  const n = Math.floor(86 * clamp((t - 2700) / 3800));
+  const a = LINE1.slice(0, Math.min(n, 72)), b = LINE2.slice(0, Math.max(0, n - 72));
+  html += "\n" + '<span class="g">' + a + "</span>" + (n >= 72 ? " ".repeat(1) + '<span class="m">[ 83%]</span>\n<span class="g">' + b + "</span>" : "");
+  if (n >= 86) html += " ".repeat(59) + '<span class="m">[100%]</span>';
+  if (t >= 6900) html += '\n\n<span class="g">86 passed</span> <span class="m">in 7.28s</span>';
+  if (t >= 7600) html += "\n\n" + prompt + (Math.floor(t / 450) % 2 ? "" : '<span class="caret"></span>');
+  out.innerHTML = html;
+};
+window.ready = document.fonts.ready;
+</script>
+</body>
+</html>
