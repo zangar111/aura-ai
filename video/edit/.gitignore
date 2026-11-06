@@ -1,0 +1,5 @@
+node_modules/
+# Копии из video/raw/out и video/voice — см. README (prepare.sh)
+public/*.mp4
+public/logo*.png
+public/voice.mp3
